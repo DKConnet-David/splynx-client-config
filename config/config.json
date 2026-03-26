@@ -1,0 +1,23 @@
+{
+    "path": "splynx_addon_client_config",
+    "translate": true,
+    "blocks": {
+        "general": {
+            "title": "General settings",
+            "items": {
+                "enable_versioning": {
+                    "title": "Enable versioning",
+                    "description": "Track change history for client config entries",
+                    "type": "checkbox",
+                    "default": true
+                },
+                "max_history_entries": {
+                    "title": "Max history entries",
+                    "description": "Maximum number of audit history entries to keep per customer (0 = unlimited)",
+                    "type": "integer",
+                    "default": 100
+                }
+            }
+        }
+    }
+}

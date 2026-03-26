@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Config - Preview</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 13px;
+            color: #333;
+            margin: 0;
+        }
+
+        /* ========== Splynx chrome ========== */
+        .splynx-header {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 14px 24px 12px;
+        }
+        .splynx-breadcrumb { font-size: 12px; color: #7c4dff; margin-bottom: 6px; }
+        .splynx-breadcrumb a { color: #7c4dff; text-decoration: none; }
+        .splynx-breadcrumb a:hover { text-decoration: underline; }
+        .splynx-customer-name {
+            font-size: 19px; font-weight: 600; color: #222;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .splynx-customer-name .icon {
+            width: 34px; height: 34px; background: #7c4dff; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 16px;
+        }
+
+        /* Tab bar */
+        .splynx-tabs {
+            background: #fff;
+            border-bottom: 3px solid #4a7cff;
+            padding: 0 24px;
+            display: flex;
+            overflow-x: auto;
+        }
+        .splynx-tab {
+            padding: 11px 16px; font-size: 13px; color: #555; cursor: pointer;
+            border-bottom: 3px solid transparent; margin-bottom: -3px;
+            white-space: nowrap; transition: all 0.15s;
+        }
+        .splynx-tab:hover { color: #222; background: #f5f7ff; }
+        .splynx-tab.active { color: #4a7cff; border-bottom-color: #4a7cff; font-weight: 600; }
+
+        /* ========== Content area ========== */
+        .splynx-content {
+            padding: 16px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .col-left { flex: 1; min-width: 0; }
+        .col-right { width: 380px; flex-shrink: 0; }
+
+        /* ========== Section panels ========== */
+        .config-section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .section-header {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 44px;
+        }
+        .section-header-left {
+            display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
+        }
+        .section-header-left .section-title {
+            font-size: 14px; font-weight: 700; color: #222;
+            border: none; background: transparent; padding: 0; margin: 0;
+            outline: none; width: 100%;
+        }
+        .section-header-left .section-title:disabled {
+            color: #222; cursor: default; -webkit-text-fill-color: #222; opacity: 1;
+        }
+        .section-header-left .section-title:enabled {
+            border-bottom: 1px dashed #4a7cff; padding-bottom: 1px;
+        }
+        .section-header-left .collapse-toggle {
+            cursor: pointer; color: #999; font-size: 12px; transition: transform 0.2s; flex-shrink: 0;
+        }
+        .section-header-left .collapse-toggle.collapsed { transform: rotate(-90deg); }
+        .header-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .section-status { font-weight: 400; font-size: 11px; color: #999; white-space: nowrap; }
+        .section-body { padding: 0; }
+        .section-body.collapsed { display: none; }
+
+        /* Quill overrides */
+        .ql-toolbar.ql-snow {
+            border: none !important;
+            border-bottom: 1px solid #e8e8e8 !important;
+            background: #fafbfc;
+            padding: 6px 10px !important;
+        }
+        .ql-container.ql-snow { border: none !important; font-family: inherit; font-size: 13px; }
+        .ql-editor { min-height: 200px; padding: 14px 18px; line-height: 1.65; }
+        .ql-editor h1, .ql-editor h2, .ql-editor h3 { color: #222; margin-top: 8px; }
+        .ql-editor h2 { font-size: 16px; font-weight: 700; }
+        .ql-editor pre.ql-syntax {
+            background: #f4f5f7; border: 1px solid #e0e0e0; border-radius: 3px;
+            font-size: 12px; padding: 10px 14px;
+        }
+
+        /* Read-only mode */
+        .editor-readonly .ql-toolbar.ql-snow { display: none; }
+        .editor-readonly .ql-editor { cursor: default; min-height: 60px; }
+        .editor-readonly .ql-clipboard,
+        .editor-readonly .ql-tooltip { display: none !important; }
+
+        /* Buttons */
+        .btn-edit {
+            background: #fff; color: #4a7cff; border: 1px solid #4a7cff;
+            border-radius: 3px; font-size: 11px; padding: 4px 12px; cursor: pointer;
+        }
+        .btn-edit:hover { background: #4a7cff; color: #fff; }
+        .btn-cancel {
+            background: #fff; color: #888; border: 1px solid #ccc;
+            border-radius: 3px; font-size: 11px; padding: 4px 12px; cursor: pointer;
+        }
+        .btn-cancel:hover { background: #f5f5f5; color: #555; }
+        .btn-splynx {
+            background: #4a7cff; color: #fff; border: none;
+            border-radius: 3px; font-size: 11px; padding: 4px 12px; cursor: pointer;
+        }
+        .btn-splynx:hover { background: #3a6ae8; color: #fff; }
+        .btn-splynx:disabled { background: #b0c4ff; cursor: default; color: #fff; }
+        .btn-splynx.unsaved { background: #ff9800; animation: pulse 1.5s infinite; }
+        .btn-splynx.unsaved:hover { background: #ef8c00; }
+        .btn-splynx.saved { background: #4caf50; }
+        .btn-delete {
+            background: #fff; color: #e74c3c; border: 1px solid #e74c3c;
+            border-radius: 3px; font-size: 11px; padding: 4px 10px; cursor: pointer;
+        }
+        .btn-delete:hover { background: #e74c3c; color: #fff; }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.75} }
+
+        /* Add section button */
+        .add-section-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 12px; border: 2px dashed #ccc; border-radius: 4px;
+            background: transparent; color: #999; font-size: 13px; cursor: pointer;
+            transition: all 0.15s; margin-bottom: 16px;
+        }
+        .add-section-btn:hover { border-color: #4a7cff; color: #4a7cff; background: #f8f9ff; }
+
+        /* ========== History panel ========== */
+        .s-panel {
+            background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 16px;
+        }
+        .s-panel-header {
+            padding: 12px 16px; font-size: 14px; font-weight: 700; color: #222;
+            border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: space-between;
+        }
+        .s-panel-header.collapsible { cursor: pointer; user-select: none; }
+        .s-panel-header.collapsible:hover { background: #fafbfc; }
+        .s-panel-header .caret-icon { transition: transform 0.2s; font-size: 12px; color: #999; }
+        .s-panel-header .caret-icon.open { transform: rotate(180deg); }
+
+        .history-entry {
+            padding: 10px 16px; border-bottom: 1px solid #f0f0f0;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .history-entry:last-child { border-bottom: none; }
+        .history-entry:hover { background: #fafbfc; }
+        .history-avatar {
+            width: 28px; height: 28px; border-radius: 50%; background: #e8eaf6; color: #5c6bc0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; flex-shrink: 0;
+        }
+        .history-detail { flex: 1; min-width: 0; }
+        .history-name { font-weight: 600; color: #333; font-size: 12px; }
+        .history-meta { font-size: 11px; color: #999; }
+        .history-actions { margin-top: 3px; }
+        .history-actions .btn { font-size: 10px; padding: 2px 7px; }
+
+        /* Diff modal */
+        .diff-pane {
+            border: 1px solid #e0e0e0; border-radius: 3px; padding: 14px;
+            min-height: 180px; max-height: 400px; overflow-y: auto; font-size: 13px; line-height: 1.5;
+        }
+        #diff-before { background: #fff5f5; border-color: #f5c6cb; }
+        #diff-after  { background: #f0fff4; border-color: #c3e6cb; }
+
+        @media (max-width: 992px) {
+            .splynx-content { flex-direction: column; }
+            .col-right { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Splynx Header ===== -->
+<div class="splynx-header">
+    <div class="splynx-breadcrumb"><a href="#">Customers</a> / <a href="#">List</a> /</div>
+    <div class="splynx-customer-name">
+        <span class="icon"><i class="fa fa-cog"></i></span>
+        Sothebys West Coast (2411 - 280)
+    </div>
+</div>
+
+<!-- ===== Tab bar ===== -->
+<div class="splynx-tabs">
+    <div class="splynx-tab">Information</div>
+    <div class="splynx-tab">Services</div>
+    <div class="splynx-tab">Billing</div>
+    <div class="splynx-tab">Statistics</div>
+    <div class="splynx-tab">Documents</div>
+    <div class="splynx-tab">CPE</div>
+    <div class="splynx-tab">Lead</div>
+    <div class="splynx-tab">Communication</div>
+    <div class="splynx-tab">DNS security</div>
+    <div class="splynx-tab active"><i class="fa fa-file-text-o"></i> Client Config</div>
+</div>
+
+<!-- ===== Content ===== -->
+<div class="splynx-content">
+
+    <!-- LEFT — Config sections -->
+    <div class="col-left" id="sections-container"></div>
+
+    <!-- RIGHT — History -->
+    <div class="col-right">
+        <div class="s-panel">
+            <div class="s-panel-header collapsible" id="toggle-history">
+                Change History
+                <i class="fa fa-chevron-down caret-icon" id="history-caret"></i>
+            </div>
+            <div id="history-body">
+                <!-- populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diff Modal -->
+<div class="modal fade" id="diffModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><i class="fa fa-exchange"></i> Change Diff</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 style="color:#c0392b; font-weight:600;">Before</h5>
+                        <div class="diff-pane" id="diff-before"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 style="color:#27ae60; font-weight:600;">After</h5>
+                        <div class="diff-pane" id="diff-after"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    var container = document.getElementById('sections-container');
+    var historyBody = document.getElementById('history-body');
+    var sectionCounter = 0;
+    var sections = {}; // id -> { quill, originalContent, isEditing, title, history[] }
+
+    // ===== Sample data =====
+    var sampleSections = [
+        {
+            title: 'PPPoE 1 — Primary Line',
+            content: [
+                '<h2>Site Details</h2>',
+                '<p><strong>Router:</strong> Mikrotik hAP ac2</p>',
+                '<p><strong>Management IP:</strong> 10.0.55.12</p>',
+                '<p><strong>VLAN:</strong> 155</p>',
+                '<p><strong>PPPoE Username:</strong> dav003</p>',
+                '<p><br></p>',
+                '<h2>CPE Info</h2>',
+                '<p><strong>Radio:</strong> Mimosa C5c</p>',
+                '<p><strong>Sector:</strong> Highsite-Alpha (S2)</p>',
+                '<p><strong>Signal:</strong> -58 dBm / SNR 32</p>',
+                '<p><br></p>',
+                '<h2>Notes</h2>',
+                '<ul>',
+                '<li>Firmware upgraded to RouterOS 7.14 on 2026-03-24 by Gareth</li>',
+                '<li>Customer has a <strong>static IP</strong> arrangement — do not change DHCP pool</li>',
+                '<li style="color: #e74c3c;"><strong>IMPORTANT:</strong> Customer runs a VOIP system — prioritise low latency</li>',
+                '</ul>',
+            ].join(''),
+            savedBy: 'Gareth',
+            savedAt: '2026-03-24 14:32',
+            history: [
+                { name: 'Gareth', date: '2026-03-24 14:32:10', section: 'PPPoE 1 — Primary Line' },
+                { name: 'David',  date: '2026-03-23 09:15:44', section: 'PPPoE 1 — Primary Line' },
+            ]
+        },
+        {
+            title: 'PPPoE 2 — Failover Line',
+            content: [
+                '<h2>Failover Details</h2>',
+                '<p><strong>Router:</strong> Mikrotik hEX S</p>',
+                '<p><strong>Management IP:</strong> 10.0.55.13</p>',
+                '<p><strong>VLAN:</strong> 156</p>',
+                '<p><strong>PPPoE Username:</strong> dav003-fo</p>',
+                '<p><br></p>',
+                '<h2>Notes</h2>',
+                '<ul>',
+                '<li>Failover only — triggers when primary drops for &gt; 30 seconds</li>',
+                '<li>Lower priority QoS — no VOIP on this line</li>',
+                '</ul>',
+            ].join(''),
+            savedBy: 'David',
+            savedAt: '2026-03-20 16:48',
+            history: [
+                { name: 'David', date: '2026-03-20 16:48:02', section: 'PPPoE 2 — Failover Line' },
+            ]
+        }
+    ];
+
+    // ===== Build all history from all sections =====
+    function rebuildHistory() {
+        var allHistory = [];
+        Object.keys(sections).forEach(function(id) {
+            var s = sections[id];
+            (s.history || []).forEach(function(h) {
+                allHistory.push(h);
+            });
+        });
+        allHistory.sort(function(a, b) { return b.date.localeCompare(a.date); });
+
+        var avatarColors = {};
+        var colorPool = [
+            { bg: '#e8eaf6', fg: '#5c6bc0' },
+            { bg: '#e8f5e9', fg: '#43a047' },
+            { bg: '#fff3e0', fg: '#ef6c00' },
+            { bg: '#fce4ec', fg: '#c62828' },
+            { bg: '#e0f7fa', fg: '#00838f' },
+        ];
+        var colorIdx = 0;
+        function getColor(name) {
+            if (!avatarColors[name]) {
+                avatarColors[name] = colorPool[colorIdx % colorPool.length];
+                colorIdx++;
+            }
+            return avatarColors[name];
+        }
+
+        historyBody.innerHTML = '';
+        allHistory.forEach(function(h) {
+            var c = getColor(h.name);
+            var div = document.createElement('div');
+            div.className = 'history-entry';
+            div.innerHTML =
+                '<div class="history-avatar" style="background:' + c.bg + '; color:' + c.fg + ';">' + h.name.charAt(0) + '</div>' +
+                '<div class="history-detail">' +
+                    '<div class="history-name">' + esc(h.name) + '</div>' +
+                    '<div class="history-meta">' + esc(h.date) + ' &middot; <em>' + esc(h.section) + '</em></div>' +
+                    '<div class="history-actions">' +
+                        '<button class="btn btn-xs btn-default btn-view-diff"><i class="fa fa-eye"></i> Diff</button>' +
+                    '</div>' +
+                '</div>';
+            historyBody.appendChild(div);
+        });
+
+        if (allHistory.length === 0) {
+            historyBody.innerHTML = '<div style="padding:16px; color:#999; text-align:center; font-size:12px;">No changes yet</div>';
+        }
+    }
+
+    // ===== Create a config section =====
+    function createSection(data) {
+        var id = 'section-' + (++sectionCounter);
+        var isNew = !data;
+        data = data || { title: 'New Section', content: '', savedBy: '', savedAt: '', history: [] };
+
+        // DOM
+        var panel = document.createElement('div');
+        panel.className = 'config-section';
+        panel.id = id;
+        panel.innerHTML =
+            '<div class="section-header">' +
+                '<div class="section-header-left">' +
+                    '<i class="fa fa-chevron-down collapse-toggle" data-target="' + id + '-body"></i>' +
+                    '<input type="text" class="section-title" value="' + escAttr(data.title) + '" disabled />' +
+                '</div>' +
+                '<div class="header-actions">' +
+                    '<span class="section-status">' +
+                        (data.savedBy ? 'Last saved by <strong>' + esc(data.savedBy) + '</strong> — ' + esc(data.savedAt) : '') +
+                    '</span>' +
+                    '<button class="btn-edit btn-section-edit"><i class="fa fa-pencil"></i> Edit</button>' +
+                    '<button class="btn-cancel btn-section-cancel" style="display:none;">Cancel</button>' +
+                    '<button class="btn-splynx btn-section-save" style="display:none;" disabled><i class="fa fa-save"></i> Save</button>' +
+                    '<button class="btn-delete btn-section-delete" style="display:none;" title="Delete section"><i class="fa fa-trash"></i></button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="section-body editor-readonly" id="' + id + '-body">' +
+                '<div class="editor-area" id="' + id + '-editor"></div>' +
+            '</div>';
+
+        // Insert before the "Add" button
+        var addBtn = container.querySelector('.add-section-btn');
+        container.insertBefore(panel, addBtn);
+
+        // Init Quill
+        var quill = new Quill('#' + id + '-editor', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Enter configuration notes...',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ color: [] }, { background: [] }],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+        quill.root.innerHTML = data.content;
+
+        var sectionData = {
+            quill: quill,
+            originalContent: quill.root.innerHTML,
+            originalTitle: data.title,
+            isEditing: false,
+            title: data.title,
+            history: data.history || [],
+            el: panel
+        };
+        sections[id] = sectionData;
+
+        // --- Element refs ---
+        var titleInput = panel.querySelector('.section-title');
+        var statusEl = panel.querySelector('.section-status');
+        var btnEdit = panel.querySelector('.btn-section-edit');
+        var btnCancel = panel.querySelector('.btn-section-cancel');
+        var btnSave = panel.querySelector('.btn-section-save');
+        var btnDel = panel.querySelector('.btn-section-delete');
+        var bodyEl = panel.querySelector('.section-body');
+        var collapseToggle = panel.querySelector('.collapse-toggle');
+
+        // --- Collapse/expand ---
+        collapseToggle.addEventListener('click', function() {
+            bodyEl.classList.toggle('collapsed');
+            collapseToggle.classList.toggle('collapsed');
+        });
+
+        // --- Edit mode ---
+        function enterEdit() {
+            sectionData.isEditing = true;
+            sectionData.originalContent = quill.root.innerHTML;
+            sectionData.originalTitle = titleInput.value;
+            quill.enable();
+            bodyEl.classList.remove('editor-readonly');
+            titleInput.disabled = false;
+            btnEdit.style.display = 'none';
+            btnCancel.style.display = '';
+            btnSave.style.display = '';
+            btnDel.style.display = '';
+            btnSave.disabled = true;
+            btnSave.className = 'btn-splynx btn-section-save';
+            btnSave.innerHTML = '<i class="fa fa-save"></i> Save';
+            quill.focus();
+        }
+
+        function exitEdit() {
+            sectionData.isEditing = false;
+            quill.disable();
+            bodyEl.classList.add('editor-readonly');
+            titleInput.disabled = true;
+            btnEdit.style.display = '';
+            btnCancel.style.display = 'none';
+            btnSave.style.display = 'none';
+            btnDel.style.display = 'none';
+        }
+
+        btnEdit.addEventListener('click', enterEdit);
+
+        btnCancel.addEventListener('click', function() {
+            var contentChanged = quill.root.innerHTML !== sectionData.originalContent;
+            var titleChanged = titleInput.value !== sectionData.originalTitle;
+            if (contentChanged || titleChanged) {
+                if (!confirm('Discard unsaved changes?')) return;
+            }
+            quill.root.innerHTML = sectionData.originalContent;
+            quill.update();
+            titleInput.value = sectionData.originalTitle;
+            exitEdit();
+        });
+
+        // --- Change detection ---
+        function checkChanges() {
+            if (!sectionData.isEditing) return;
+            var contentChanged = quill.root.innerHTML !== sectionData.originalContent;
+            var titleChanged = titleInput.value !== sectionData.originalTitle;
+            var hasChanges = contentChanged || titleChanged;
+            btnSave.disabled = !hasChanges;
+            if (hasChanges) {
+                btnSave.classList.add('unsaved');
+                statusEl.innerHTML = '<em style="color:#ff9800;">Unsaved changes</em>';
+            } else {
+                btnSave.classList.remove('unsaved');
+            }
+        }
+        quill.on('text-change', checkChanges);
+        titleInput.addEventListener('input', checkChanges);
+
+        // --- Save ---
+        btnSave.addEventListener('click', function() {
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Saving...';
+            setTimeout(function() {
+                sectionData.originalContent = quill.root.innerHTML;
+                sectionData.originalTitle = titleInput.value;
+                sectionData.title = titleInput.value;
+                var now = new Date();
+                var ts = now.toISOString().replace('T', ' ').substring(0, 19);
+                sectionData.history.unshift({ name: 'David', date: ts, section: titleInput.value });
+
+                btnSave.classList.remove('unsaved');
+                btnSave.classList.add('saved');
+                btnSave.innerHTML = '<i class="fa fa-check"></i> Saved';
+                statusEl.innerHTML = 'Last saved by <strong>David</strong> — ' + ts;
+                rebuildHistory();
+
+                setTimeout(function() { exitEdit(); }, 1000);
+            }, 600);
+        });
+
+        // --- Delete ---
+        btnDel.addEventListener('click', function() {
+            if (!confirm('Delete this section permanently?')) return;
+            panel.remove();
+            delete sections[id];
+            rebuildHistory();
+        });
+
+        // If brand new, auto-enter edit mode
+        if (isNew) {
+            enterEdit();
+            titleInput.select();
+        }
+
+        return sectionData;
+    }
+
+    // ===== Add Section button =====
+    var addBtn = document.createElement('button');
+    addBtn.className = 'add-section-btn';
+    addBtn.innerHTML = '<i class="fa fa-plus"></i> Add Section';
+    addBtn.addEventListener('click', function() {
+        createSection();
+    });
+    container.appendChild(addBtn);
+
+    // ===== Init sample sections =====
+    sampleSections.forEach(function(s) { createSection(s); });
+    rebuildHistory();
+
+    // ===== Toggle history =====
+    document.getElementById('toggle-history').addEventListener('click', function() {
+        var show = historyBody.style.display === 'none';
+        historyBody.style.display = show ? 'block' : 'none';
+        document.getElementById('history-caret').classList.toggle('open', show);
+    });
+
+    // ===== Diff modal =====
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-view-diff');
+        if (btn) { $('#diffModal').modal('show'); }
+    });
+
+    // ===== Ctrl+S =====
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            Object.keys(sections).forEach(function(id) {
+                var s = sections[id];
+                if (s.isEditing) {
+                    var saveBtn = s.el.querySelector('.btn-section-save');
+                    if (!saveBtn.disabled) saveBtn.click();
+                }
+            });
+        }
+    });
+
+    // ===== Helpers =====
+    function esc(str) {
+        if (!str) return '';
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
+    }
+    function escAttr(str) {
+        if (!str) return '';
+        return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+})();
+</script>
+</body>
+</html>

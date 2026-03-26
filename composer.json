@@ -1,0 +1,24 @@
+{
+    "name": "splynx/splynx-addon-client-config",
+    "description": "Client Configuration Notes - Rich text notepad with audit trail for customer accounts",
+    "type": "splynx-addon",
+    "license": "BSD-3-Clause",
+    "version": "1.0.0",
+    "require": {
+        "splynx/splynx-addon-base": ">=3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "splynx\\client_config\\": "src/"
+        }
+    },
+    "extra": {
+        "splynx": {
+            "name": "splynx-addon-client-config",
+            "title": "Client Config",
+            "description": "Rich text notepad for client configurations with full audit history",
+            "category": "Tools",
+            "version": "1.0.0"
+        }
+    }
+}

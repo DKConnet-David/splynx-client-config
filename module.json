@@ -1,0 +1,22 @@
+{
+    "name": "splynx-addon-client-config",
+    "title": "Client Config",
+    "description": "Rich text notepad for client configurations with full audit history",
+    "version": "1.0.0",
+    "category": "Tools",
+    "author": "DK Connect",
+    "namespace": "splynx\\client_config",
+    "module_class": "splynx\\client_config\\Module",
+    "settings": {
+        "enable_versioning": true,
+        "max_history_entries": 100
+    },
+    "customer_tabs": [
+        {
+            "title": "Client Config",
+            "icon": "fa fa-file-text-o",
+            "route": "/client-config/customer/index",
+            "position": 90
+        }
+    ]
+}
